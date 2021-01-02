@@ -6,18 +6,25 @@ export const GlobalStyle = createGlobalStyle`
     }
 
     body{
+        height:100%;
         font-family:"Roboto", Arial, Helvetica, sans-serif;
         margin:0;
         padding:0;
-        color:#fff;
-        background:#282828;
+        color:#000;
+        background:#fff;
     }
 
     *{
         box-sizing:border-box;
     }
+
+    .container{
+        height:100%;
+    }
 `;
 
 export const Main = styled.div`
-    
+    display:flex;
+    width:100%;
+    height:100%;
 `;

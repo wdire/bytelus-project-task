@@ -1,22 +1,34 @@
 import React, { Component } from 'react';
 
 import SideBar from './components/SideBar';
-import { Main } from './App.styles';
+import { GlobalStyle, Main } from './App.styles';
 import Scheduler from './components/Scheduler';
 
-const $ = require('jquery');
-import 'jquery-ui/ui/widgets/draggable';
+type IProps = {
+}
 
-export class App extends Component {
+type IState = {
+}
+
+export class App extends Component<IProps, IState> {
+
+    constructor(props: IProps){
+        super(props);
+
+        this.state = {
+
+        }
+    }
 
     componentDidMount(){
-        
+
     }
 
     render() {
 
         return (
             <>
+                <GlobalStyle></GlobalStyle>
                 <Main>
                     <SideBar/>
                     <Scheduler/>
