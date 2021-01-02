@@ -1,8 +1,9 @@
 import React, { Component } from 'react'
-import { SchedulerContainer, SchedulerDay, SchedulerItem } from './Scheduler.styles';
+import { SchedulerContainer, SchedulerDay, SchedulerDragArea, SchedulerItem } from './Scheduler.styles';
 
 const $ = require('jquery');
 import 'jquery-ui/ui/widgets/draggable';
+import 'jquery-ui/ui/widgets/droppable';
 
 
 type IProps = {
@@ -29,20 +30,36 @@ export default class Scheduler extends Component<IProps, IState> {
 
         let schedulerDayWidth = this.schedulerContainer.current?.offsetWidth ? this.schedulerContainer.current?.offsetWidth / 7 : 0;
 
-        $(".schedulerItem").draggable({ containment:".schedulerContainer", snap: ".schedulerDay", grid: [ schedulerDayWidth, 15 ]  });
+        console.log(schedulerDayWidth);
+
+        $(".schedulerItem").draggable({ 
+            containment:".schedulerContainer", 
+            snap: ".schedulerDay",
+            grid: [ 5, 15 ],
+            scroll:false,
+        });
+
+        $(".schedulerDay").droppable({
+            drop: function(event:any, ui:any){
+                ui.draggable[0].style.left = "0px";
+                ui.draggable.detach().appendTo($(this));
+            }
+        });
     }
 
     render() {
         return (
             <>
                 <SchedulerContainer ref={this.schedulerContainer}>
-                    <SchedulerDay></SchedulerDay>
-                    <SchedulerDay></SchedulerDay>
-                    <SchedulerDay></SchedulerDay>
-                    <SchedulerDay></SchedulerDay>
-                    <SchedulerDay></SchedulerDay>
-                    <SchedulerDay></SchedulerDay>
-                    <SchedulerDay></SchedulerDay>
+                    <SchedulerDragArea>
+                        <SchedulerDay><SchedulerItem>Kalem</SchedulerItem></SchedulerDay>
+                        <SchedulerDay></SchedulerDay>
+                        <SchedulerDay></SchedulerDay>
+                        <SchedulerDay></SchedulerDay>
+                        <SchedulerDay></SchedulerDay>
+                        <SchedulerDay></SchedulerDay>
+                        <SchedulerDay></SchedulerDay>
+                    </SchedulerDragArea>
                 </SchedulerContainer>
             </>
         )
