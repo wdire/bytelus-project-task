@@ -1,5 +1,9 @@
 import React, { Component } from 'react';
 
+import SideBar from './components/SideBar';
+import { Main } from './App.styles';
+import Scheduler from './components/Scheduler';
+
 const $ = require('jquery');
 import 'jquery-ui/ui/widgets/draggable';
 
@@ -13,7 +17,10 @@ export class App extends Component {
 
         return (
             <>
-                
+                <Main>
+                    <SideBar/>
+                    <Scheduler/>
+                </Main>
             </>
         )
     }

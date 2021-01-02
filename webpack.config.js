@@ -17,8 +17,9 @@ module.exports = {
   resolve: {
     extensions: ['.ts', '.tsx', '.js', '.json'],
     alias: {
-      'jquery-ui': 'jquery-ui/ui/widgets',
-		  'jquery-ui-css': 'jquery-ui/../../themes/base',
+      "jquery":"jquery/dist/jquery.js",
+      "jquery-ui": "jquery-ui/ui/widgets",
+		  "jquery-ui-css": "jquery-ui/../../themes/base",
       modules: path.join(__dirname, "node_modules"),
     }
   },
