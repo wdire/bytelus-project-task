@@ -15,11 +15,11 @@ module.exports = {
   },
 
   resolve: {
-    extensions: ['.ts', '.tsx', '.js', '.json'],
+    extensions: ['.ts', '.tsx', '.js', '.json', '.css'],
     alias: {
       "jquery":"jquery/dist/jquery.js",
       "jquery-ui": "jquery-ui/ui/widgets",
-		  "jquery-ui-css": "jquery-ui/../../themes/base",
+		  "jquery-ui-css": "jquery-ui/themes/base",
       modules: path.join(__dirname, "node_modules"),
     }
   },
@@ -33,6 +33,13 @@ module.exports = {
         options:{
           cacheDirectory:true
         }
+      },
+      {
+        test: /\.css$/i,
+        use: [
+          { loader: "style-loader" },
+          { loader: "css-loader" }
+        ]
       }
     ],
   },
