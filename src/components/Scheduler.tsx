@@ -9,12 +9,43 @@ import 'jquery-ui/ui/widgets/draggable';
 import 'jquery-ui/ui/widgets/droppable';
 import 'jquery-ui/ui/widgets/resizable';
 
+// One hour in pixel
 const SCHEDULER_ITEM_HEIGHT = 50;
+
+const SchedulerDaysArr = ["Monday", "Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
+
+enum SchedulerDays {
+    MON = 0,
+    TUE = 1,
+    WED = 2,
+    THU = 3,
+    FRI = 4,
+    SAT = 5,
+    SUN = 6
+}
+
+type SchedulerItemInfo = {
+    id:number;
+    name:string;
+    day:SchedulerDays;
+    startTime:number;
+    endTime:number;
+    color:string;
+}
+
+type SchedulerItemInfoOptional = {
+    name?:string;
+    day?:SchedulerDays;
+    startTime?:number;
+    endTime?:number;
+    color?:string;
+}
 
 type IProps = {
 }
 
 type IState = {
+    schedulerItems:SchedulerItemInfo[];
 }
 
 export default class Scheduler extends Component<IProps, IState> {
@@ -27,13 +58,24 @@ export default class Scheduler extends Component<IProps, IState> {
         this.schedulerDragArea = React.createRef<HTMLDivElement>();
 
         this.state = {
-            
+            schedulerItems:[]
         }
     }
 
     componentDidMount(){
 
+        this.createSchedulerItem({
+            color:"red",
+            day:SchedulerDays.FRI,
+            endTime:10,
+            startTime:8,
+            id:2,
+            name:"sadasd"
+        });
+
         let schedulerDragArea = this.schedulerDragArea?.current;
+
+        let schedulerItemWidth = schedulerDragArea?.offsetWidth ? Math.floor(schedulerDragArea?.offsetWidth / 7) : 5;
 
         let schedulerDragArea_offsetHeight = schedulerDragArea?.offsetHeight || 0;
 
@@ -43,9 +85,20 @@ export default class Scheduler extends Component<IProps, IState> {
         $(".schedulerItem").draggable({ 
             containment:".schedulerDragArea", 
             snap: ".schedulerDay",
-            grid: [ 5, SCHEDULER_ITEM_HEIGHT / 4 ],
+            snapMode: "inner",
+            grid: [ schedulerItemWidth, SCHEDULER_ITEM_HEIGHT / 4 ],
             scroll:false,
-        });
+            stop:(event:any, ui:any)=>{
+                let timeStart = ui.position.top / SCHEDULER_ITEM_HEIGHT + 1;
+                let timeEnd = (ui.helper[0].offsetHeight + ui.position.top) / SCHEDULER_ITEM_HEIGHT + 1;
+
+                this.setSchedulerItemInfo({
+                    startTime:timeStart,
+                    endTime:timeEnd
+                });
+            }
+
+        }).css("position","absolute");
 
         $(".schedulerItemWrapper").resizable({
             handles:"s",
@@ -62,17 +115,55 @@ export default class Scheduler extends Component<IProps, IState> {
         });
 
         $(".schedulerDay").droppable({
-            drop: function(event:any, ui:any){
+            drop: (event:any, ui:any) => {
                 ui.draggable[0].style.left = "0px";
-                ui.draggable.detach().appendTo($(this));
+                if(ui.draggable[0].parentElement !== event.target){
+                    ui.draggable.detach().appendTo(event.target);
+                }
             }
         });
 
         let parent = this.schedulerDragArea.current?.parentElement;
         let scrollHeight = parent?.scrollHeight;
 
-        $(parent).children()[0].style.height = scrollHeight + "px";
-        $(parent).children()[1].style.height = scrollHeight + "px";
+        if(scrollHeight){
+            $(parent).children()[0].style.height = scrollHeight + "px";
+            $(parent).children()[1].style.height = scrollHeight - 50 + "px";
+        }
+    }
+
+    createSchedulerItem = (info:SchedulerItemInfo)=>{
+        this.setState((prevState)=>{
+            return {schedulerItems:[...prevState.schedulerItems, info]};
+        });
+    }
+
+    addSchedulerItemToSchedule = (itemId:number)=>{
+        
+    }
+
+    findSchedulerItem = (itemId:number) => {
+        
+    }
+
+    writeScheduleDays = ()=>{
+        let days = [];
+        for (let item in SchedulerDaysArr) {
+            days.push(<SchedulerDay key={item} data-day={item}></SchedulerDay>);
+        }
+        return days;
+    }
+
+    writeScheduleDaysLabels = ()=>{
+        let labels = [];
+        for (let item in SchedulerDaysArr) {
+            labels.push(<SchedulerDayLabel key={item+"_label"}>{SchedulerDaysArr[item].substr(0,3)}</SchedulerDayLabel>);
+        }
+        return labels;
+    }
+
+    setSchedulerItemInfo = (info:SchedulerItemInfoOptional)=>{
+        
     }
 
     render() {
@@ -80,13 +171,7 @@ export default class Scheduler extends Component<IProps, IState> {
             <>
                 <SchedulerContainer>
                     <SchedulerDayLabelsContainer>
-                        <SchedulerDayLabel>Mon</SchedulerDayLabel>
-                        <SchedulerDayLabel>Tue</SchedulerDayLabel>
-                        <SchedulerDayLabel>Wed</SchedulerDayLabel>
-                        <SchedulerDayLabel>Thu</SchedulerDayLabel>
-                        <SchedulerDayLabel>Fri</SchedulerDayLabel>
-                        <SchedulerDayLabel>Sat</SchedulerDayLabel>
-                        <SchedulerDayLabel>Sun</SchedulerDayLabel>
+                        {this.writeScheduleDaysLabels()}
                     </SchedulerDayLabelsContainer>
                     <SchedulerWrapper>
                         <SchedulerTimesContainer>
@@ -188,19 +273,7 @@ export default class Scheduler extends Component<IProps, IState> {
                             </SchedulerTime>
                         </SchedulerTimesContainer>
                         <SchedulerDragArea ref={this.schedulerDragArea}>
-                            <SchedulerDay>
-                                <SchedulerItem>
-                                    <SchedulerItemWrapper>
-                                        Kalem
-                                    </SchedulerItemWrapper>
-                                </SchedulerItem>
-                            </SchedulerDay>
-                            <SchedulerDay></SchedulerDay>
-                            <SchedulerDay></SchedulerDay>
-                            <SchedulerDay></SchedulerDay>
-                            <SchedulerDay></SchedulerDay>
-                            <SchedulerDay></SchedulerDay>
-                            <SchedulerDay></SchedulerDay>
+                            {this.writeScheduleDays()}
                         </SchedulerDragArea>
                     </SchedulerWrapper>
                 </SchedulerContainer>

@@ -1,6 +1,6 @@
 import styled, { css } from 'styled-components';
 
-const scheduleMarginLeft = "50px";
+const scheduleMarginLeft = "46px";
 
 export const SchedulerContainer = styled.div.attrs(props => {
     return {
@@ -44,7 +44,7 @@ export const SchedulerDragArea = styled.div.attrs(props => {
 
 export const SchedulerItem = styled.div.attrs(props => {
     return {
-        className:"schedulerItem"
+        className:"schedulerItem",
     }
 })`
     width:100%;
@@ -56,7 +56,7 @@ export const SchedulerItemWrapper = styled.div.attrs(props => {
     return {
         className:"schedulerItemWrapper"
     }
-})`
+})<{color:string}>`
     width:100%;
     background:#2c2c2c;
     color:#fff;
@@ -64,7 +64,7 @@ export const SchedulerItemWrapper = styled.div.attrs(props => {
     height:100px;
     padding:8px;
     border-radius:4px;
-    border-top:5px solid #da2a2a;
+    border-top:5px solid ${props => props.color ? props.color : "#da2a2a"};
     font-size:15px;
 `;
 
@@ -85,7 +85,8 @@ export const SchedulerDay = styled.div.attrs(props => {
 })`
     width:calc(100% / 7);
     max-height:100%;
-    //border-right:1px solid #000;
+    margin:0 1px;
+    position:relative;
 `;
 
 export const SchedulerDayLabel = styled.div`
