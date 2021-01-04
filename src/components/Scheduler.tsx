@@ -1,4 +1,5 @@
 import React, { Component } from 'react'
+import ReactDOM from "react-dom";
 import { SchedulerContainer, SchedulerDay, SchedulerDayLabel, SchedulerDayLabelsContainer, SchedulerDragArea, SchedulerItem, SchedulerItemWrapper, SchedulerTime, SchedulerTimeLine, SchedulerTimesContainer, SchedulerTimeText, SchedulerWrapper } from './Scheduler.styles';
 
 const $ = require('jquery');
@@ -8,6 +9,7 @@ import 'modules/jquery-ui/themes/base/resizable.css';
 import 'jquery-ui/ui/widgets/draggable';
 import 'jquery-ui/ui/widgets/droppable';
 import 'jquery-ui/ui/widgets/resizable';
+import { createId } from '../utils';
 
 // One hour in pixel
 const SCHEDULER_ITEM_HEIGHT = 50;
@@ -66,21 +68,65 @@ export default class Scheduler extends Component<IProps, IState> {
 
         this.createSchedulerItem({
             color:"red",
-            day:SchedulerDays.FRI,
-            endTime:10,
-            startTime:8,
-            id:2,
-            name:"sadasd"
+            day:SchedulerDays.WED,
+            startTime:3.75,
+            endTime:6.5,
+            name:"Some Meeting",
+            id:createId()
         });
+
+
+        // Parent(schedulerItem) elm has draggable and
+        // child(schedulerItemWrapper) has resizable. They don't work together in same element.
+
+        this.initSchedulerItems();
+
+        $(".schedulerDay").droppable({
+            drop: (event:any, ui:any) => {
+                ui.draggable[0].style.left = "0px";
+                if(ui.draggable[0].parentElement !== event.target){
+                    ui.draggable.detach().appendTo(event.target);
+                }
+            }
+        });
+
+        let parent = this.schedulerDragArea.current?.parentElement;
+        let scrollHeight = parent?.scrollHeight;
+
+        if(scrollHeight){
+            $(parent).children()[0].style.height = scrollHeight + "px";
+            $(parent).children()[1].style.height = scrollHeight - 50 + "px";
+        }
+    }
+
+    createSchedulerItem = (info:SchedulerItemInfo)=>{
+
+        this.setState((prevState)=>{
+            return {schedulerItems:[...prevState.schedulerItems, info]};
+        });
+
+        let itemTop = (info.startTime - 1) * SCHEDULER_ITEM_HEIGHT;
+
+        let itemHeight = (info.endTime - 1) * SCHEDULER_ITEM_HEIGHT - itemTop;
+
+        let elm = (
+                <SchedulerItem style={{top:itemTop}}>
+                    <SchedulerItemWrapper color={info.color} data-id={JSON.stringify(info)} style={{height:itemHeight}}>
+                        {info.name}
+                    </SchedulerItemWrapper>
+                </SchedulerItem>
+        );
+
+        ReactDOM.render(elm, $(`.schedulerDay[data-day=${info.day}]`)[0], ()=>{
+            this.initSchedulerItems();
+        });        
+    }
+
+    initSchedulerItems = () => {
 
         let schedulerDragArea = this.schedulerDragArea?.current;
 
         let schedulerItemWidth = schedulerDragArea?.offsetWidth ? Math.floor(schedulerDragArea?.offsetWidth / 7) : 5;
-
-        let schedulerDragArea_offsetHeight = schedulerDragArea?.offsetHeight || 0;
-
-        // Parent(schedulerItem) elm has draggable and
-        // child(schedulerItemWrapper) has resizable. They don't work together in same element.
 
         $(".schedulerItem").draggable({ 
             containment:".schedulerDragArea", 
@@ -113,36 +159,10 @@ export default class Scheduler extends Component<IProps, IState> {
 
             }
         });
-
-        $(".schedulerDay").droppable({
-            drop: (event:any, ui:any) => {
-                ui.draggable[0].style.left = "0px";
-                if(ui.draggable[0].parentElement !== event.target){
-                    ui.draggable.detach().appendTo(event.target);
-                }
-            }
-        });
-
-        let parent = this.schedulerDragArea.current?.parentElement;
-        let scrollHeight = parent?.scrollHeight;
-
-        if(scrollHeight){
-            $(parent).children()[0].style.height = scrollHeight + "px";
-            $(parent).children()[1].style.height = scrollHeight - 50 + "px";
-        }
     }
 
-    createSchedulerItem = (info:SchedulerItemInfo)=>{
-        this.setState((prevState)=>{
-            return {schedulerItems:[...prevState.schedulerItems, info]};
-        });
-    }
-
-    addSchedulerItemToSchedule = (itemId:number)=>{
+    setSchedulerItemInfo = (info:SchedulerItemInfoOptional)=>{
         
-    }
-
-    findSchedulerItem = (itemId:number) => {
         
     }
 
@@ -160,10 +180,6 @@ export default class Scheduler extends Component<IProps, IState> {
             labels.push(<SchedulerDayLabel key={item+"_label"}>{SchedulerDaysArr[item].substr(0,3)}</SchedulerDayLabel>);
         }
         return labels;
-    }
-
-    setSchedulerItemInfo = (info:SchedulerItemInfoOptional)=>{
-        
     }
 
     render() {
