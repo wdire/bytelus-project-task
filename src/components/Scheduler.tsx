@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import ReactDOM from "react-dom";
-import { SchedulerContainer, SchedulerDay, SchedulerDayLabel, SchedulerDayLabelsContainer, SchedulerDragArea, SchedulerItem, SchedulerItemWrapper, SchedulerTime, SchedulerTimeLine, SchedulerTimesContainer, SchedulerTimeText, SchedulerWrapper } from './Scheduler.styles';
+import { SchedulerContainer, SchedulerDay, SchedulerDayLabel, SchedulerDayLabelsContainer, SchedulerDragArea, SchedulerItem, SchedulerItemColor, SchedulerItemDelete, SchedulerItemInfo, SchedulerItemInfoClose, SchedulerItemInfoContainer, SchedulerItemInfoDay, SchedulerItemName, SchedulerItemNameContainer, SchedulerItemWrapper, SchedulerTime, SchedulerTimeLine, SchedulerTimesContainer, SchedulerTimeText, SchedulerWrapper } from './Scheduler.styles';
 
 const $ = require('jquery');
 
@@ -47,7 +47,7 @@ type IProps = {
 }
 
 type IState = {
-    schedulerItems:SchedulerItemInfo[];
+    currentInfoElmId:number;
 }
 
 export default class Scheduler extends Component<IProps, IState> {
@@ -60,7 +60,7 @@ export default class Scheduler extends Component<IProps, IState> {
         this.schedulerDragArea = React.createRef<HTMLDivElement>();
 
         this.state = {
-            schedulerItems:[]
+            currentInfoElmId:0
         }
     }
 
@@ -75,6 +75,15 @@ export default class Scheduler extends Component<IProps, IState> {
             id:createId()
         });
 
+        this.createSchedulerItem({
+            color:"blue",
+            day:SchedulerDays.FRI,
+            startTime:5.25,
+            endTime:7.5,
+            name:"Some other Meeting",
+            id:createId()
+        });
+
 
         // Parent(schedulerItem) elm has draggable and
         // child(schedulerItemWrapper) has resizable. They don't work together in same element.
@@ -86,6 +95,11 @@ export default class Scheduler extends Component<IProps, IState> {
                 ui.draggable[0].style.left = "0px";
                 if(ui.draggable[0].parentElement !== event.target){
                     ui.draggable.detach().appendTo(event.target);
+                    let itemInfo:SchedulerItemInfo = JSON.parse(ui.helper[0].getAttribute("data-info"));
+
+                    itemInfo.day = Number(event.target.getAttribute("data-day"));
+
+                    ui.helper[0].setAttribute("data-info", JSON.stringify(itemInfo));
                 }
             }
         });
@@ -101,16 +115,12 @@ export default class Scheduler extends Component<IProps, IState> {
 
     createSchedulerItem = (info:SchedulerItemInfo)=>{
 
-        this.setState((prevState)=>{
-            return {schedulerItems:[...prevState.schedulerItems, info]};
-        });
-
         let itemTop = roundTo_25(info.startTime - 1) * SCHEDULER_ITEM_HEIGHT;
 
         let itemHeight = roundTo_25(info.endTime - 1) * SCHEDULER_ITEM_HEIGHT - itemTop;
 
         let elm = (
-                <SchedulerItem style={{top:itemTop}} data-info={JSON.stringify(info)}>
+                <SchedulerItem style={{top:itemTop}} data-id={info.id} data-info={JSON.stringify(info)} >
                     <SchedulerItemWrapper color={info.color} style={{height:itemHeight}}>
                         {info.name}
                     </SchedulerItemWrapper>
@@ -134,7 +144,15 @@ export default class Scheduler extends Component<IProps, IState> {
             snapMode: "inner",
             grid: [ schedulerItemWidth, SCHEDULER_ITEM_HEIGHT / 4 ],
             scroll:false,
+            start:(event:any, ui:any)=>{
+
+                this.hideItemInfo();
+
+            },
             stop:(event:any, ui:any)=>{
+
+                //Set start and end time on dragging ends
+
                 let timeStart = roundTo_25(ui.position.top / SCHEDULER_ITEM_HEIGHT + 1);
                 let timeEnd = roundTo_25((ui.helper[0].offsetHeight + ui.position.top) / SCHEDULER_ITEM_HEIGHT + 1);
 
@@ -146,7 +164,12 @@ export default class Scheduler extends Component<IProps, IState> {
                 ui.helper[0].setAttribute("data-info", JSON.stringify(itemInfo));
             }
 
-        }).css("position","absolute");
+        }).css("position","absolute").click((e:any)=>{
+
+            this.hideItemInfo();
+
+            this.handleSchedulerItemClick(e);
+        });
 
         $(".schedulerItemWrapper").resizable({
             handles:"s",
@@ -161,6 +184,9 @@ export default class Scheduler extends Component<IProps, IState> {
 
             },
             stop:(event:any, ui:any)=>{
+
+                //Set end time on resizing ends
+
                 let newHeight = Math.round( ui.size.height / (SCHEDULER_ITEM_HEIGHT / 4) ) * (SCHEDULER_ITEM_HEIGHT / 4);
 
                 let itemInfo:SchedulerItemInfo = JSON.parse(ui.helper[0].parentElement.getAttribute("data-info"));
@@ -171,6 +197,72 @@ export default class Scheduler extends Component<IProps, IState> {
 
                 ui.helper[0].parentElement.setAttribute("data-info", JSON.stringify(itemInfo));
 
+            }
+        });
+    }
+
+    
+    handleSchedulerItemClick = (e:any) => {
+        let parentElm = (e.target as HTMLDivElement).parentElement;
+
+        if(parentElm){
+            let itemInfoData = parentElm.getAttribute("data-info");
+            if(itemInfoData){
+                let itemInfo:SchedulerItemInfo = JSON.parse(itemInfoData);
+
+                let top = parentElm.offsetTop - 20;
+                let left = parentElm.parentElement?.offsetLeft || 50;
+
+                left = left + (parentElm.offsetWidth / 2);
+
+                this.showItemInfo({
+                    posX:left,
+                    posY:top,
+                    info:itemInfo
+                });
+            }
+        }
+    }
+
+    showItemInfo = (data:{
+        posX:number;
+        posY:number;
+        info:SchedulerItemInfo
+    }) => {
+        let itemInfoCon = $(".schedulerItemInfoContainer");
+        itemInfoCon.css("top",data.posY);
+        itemInfoCon.css("left",data.posX);
+
+        let startTimeDate = new Date(0, 0);
+        let startTime = startTimeDate.setMinutes(data.info.startTime * 60);
+        let startTimeResult = startTimeDate.toTimeString().slice(0, 5);
+
+        let endTimeDate = new Date(0, 0);
+        let endTime = endTimeDate.setMinutes(data.info.endTime * 60);
+        let endTimeResult = endTimeDate.toTimeString().slice(0, 5);
+
+        let itemDayTime = SchedulerDaysArr[data.info.day] + " " + startTimeResult + " - " + endTimeResult;
+
+        $(itemInfoCon).find(".schedulerItemInfoDay").text(itemDayTime);
+        $(itemInfoCon).find(".schedulerItemName").text(data.info.name);
+        $(itemInfoCon).find(".schedulerItemColor").css("background", data.info.color);
+
+        this.setState({currentInfoElmId:data.info.id});
+
+        itemInfoCon.addClass("show");
+    }
+
+    hideItemInfo = ()=>{
+        $("div.schedulerItemInfoContainer").removeClass("show");
+    }
+
+    deleteItemInfo = ()=>{
+        document.querySelectorAll(".schedulerItem").forEach((e:any)=>{
+            let itemId:number = e.getAttribute("data-id");
+            
+            if(Number(itemId) === Number(this.state.currentInfoElmId)){
+                e.remove();
+                this.hideItemInfo();
             }
         });
     }
@@ -303,6 +395,21 @@ export default class Scheduler extends Component<IProps, IState> {
                         </SchedulerTimesContainer>
                         <SchedulerDragArea ref={this.schedulerDragArea}>
                             {this.writeScheduleDays()}
+                            <SchedulerItemInfoContainer>
+                                <SchedulerItemInfo>
+                                    <SchedulerItemInfoDay>
+                                        Thursday 14:15 - 17:15
+                                    </SchedulerItemInfoDay>
+                                    <SchedulerItemNameContainer>
+                                        <SchedulerItemColor></SchedulerItemColor>
+                                        <SchedulerItemName>Some Meeting</SchedulerItemName>
+                                    </SchedulerItemNameContainer>
+                                    <SchedulerItemDelete onClick={()=>{this.deleteItemInfo()}}>
+                                        Delete time slot
+                                    </SchedulerItemDelete>
+                                    <SchedulerItemInfoClose onClick={()=>{this.hideItemInfo()}}>&#10005;</SchedulerItemInfoClose>
+                                </SchedulerItemInfo>
+                            </SchedulerItemInfoContainer>
                         </SchedulerDragArea>
                     </SchedulerWrapper>
                 </SchedulerContainer>

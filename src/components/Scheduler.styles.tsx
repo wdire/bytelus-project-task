@@ -49,7 +49,6 @@ export const SchedulerItem = styled.div.attrs(props => {
 })`
     width:100%;
     min-height:calc(100% / 17);
-    overflow:hidden;
 `;
 
 export const SchedulerItemWrapper = styled.div.attrs(props => {
@@ -66,6 +65,105 @@ export const SchedulerItemWrapper = styled.div.attrs(props => {
     border-radius:4px;
     border-top:5px solid ${props => props.color ? props.color : "#da2a2a"};
     font-size:15px;
+    overflow:hidden;
+    cursor:pointer;
+`;
+
+export const SchedulerItemInfoContainer = styled.div.attrs(props => {
+    return {
+        className:"schedulerItemInfoContainer",
+    }
+})`
+    &.show{
+        display:initial;
+    }
+
+    display:none;
+
+    position:absolute;
+    z-index:500;
+
+`;
+
+export const SchedulerItemInfo = styled.div.attrs(props => {
+    return {
+        className:"schedulerItemInfo",
+    }
+})`
+    width:260px;
+    height:120px;
+    background:#fff;
+    box-shadow:0px 0px 4px 3px rgba(0,0,0,.2);
+    padding:15px;
+    font-size:15px;
+    display:flex;
+    flex-direction:column;
+`;
+
+export const SchedulerItemInfoDay = styled.div.attrs(props => {
+    return {
+        className:"schedulerItemInfoDay",
+    }
+})`
+    font-size:18px;
+    margin-bottom:10px;
+`;
+
+export const SchedulerItemNameContainer = styled.div.attrs(props => {
+    return {
+        className:"schedulerItemNameContainer",
+    }
+})`
+    display:flex;
+    align-items:center;
+    margin-left:15px;
+`;
+
+export const SchedulerItemColor = styled.div.attrs(props => {
+    return {
+        className:"schedulerItemColor",
+    }
+})`
+    width:9px;
+    height:9px;
+    border-radius:50%;
+    border:1px solid rgb(0, 0, 0,0.2);
+    margin-right:8px;
+`;
+
+export const SchedulerItemName = styled.div.attrs(props => {
+    return {
+        className:"schedulerItemName",
+    }
+})`
+
+`;
+
+export const SchedulerItemDelete = styled.div.attrs(props => {
+    return {
+        className:"schedulerItemDelete",
+    }
+})`
+    margin-top: auto;
+    color:#888888;
+    cursor:pointer;
+`;
+
+export const SchedulerItemInfoClose = styled.div.attrs(props => {
+    return {
+        className:"schedulerItemInfoClose",
+    }
+})`
+    position: absolute;
+    z-index:15;
+    top: 13px;
+    right: 15px;
+    font-size: 18px;
+    color: #808080;
+
+    &:hover{
+        cursor:pointer;
+    }
 `;
 
 // END: Scheduler Item
