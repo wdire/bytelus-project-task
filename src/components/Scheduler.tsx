@@ -43,6 +43,50 @@ type SchedulerItemInfoOptional = {
     color?:string;
 }
 
+const PRE_DEFINED_SCHEDULES = [
+    {
+        color:"red",
+        day:SchedulerDays.WED,
+        startTime:3.75,
+        endTime:6.5,
+        name:"Have Fun",
+        id:createId()
+    },
+    {
+        color:"blue",
+        day:SchedulerDays.MON,
+        startTime:5.50,
+        endTime:7.25,
+        name:"Watch a movie",
+        id:createId()
+    },
+    {
+        color:"purple",
+        day:SchedulerDays.TUE,
+        startTime:1,
+        endTime:2,
+        name:"Some Meeting 1",
+        id:createId()
+    },
+    {
+        color:"lightblue",
+        day:SchedulerDays.SAT,
+        startTime:8.50,
+        endTime:13,
+        name:"Some Meeting 3",
+        id:createId()
+    },
+    {
+        color:"green",
+        day:SchedulerDays.SUN,
+        startTime:4.25,
+        endTime:7,
+        name:"Some Meeting 2",
+        id:createId()
+    },
+];
+
+
 type IProps = {
 }
 
@@ -66,23 +110,9 @@ export default class Scheduler extends Component<IProps, IState> {
 
     componentDidMount(){
 
-        this.createSchedulerItem({
-            color:"red",
-            day:SchedulerDays.WED,
-            startTime:3.75,
-            endTime:6.5,
-            name:"Some Meeting",
-            id:createId()
-        });
-
-        this.createSchedulerItem({
-            color:"blue",
-            day:SchedulerDays.FRI,
-            startTime:5.25,
-            endTime:7.5,
-            name:"Some other Meeting",
-            id:createId()
-        });
+        for(let i = 0; i < PRE_DEFINED_SCHEDULES.length;i++){
+            this.createSchedulerItem(PRE_DEFINED_SCHEDULES[i]);
+        }
 
 
         // Parent(schedulerItem) elm has draggable and
@@ -129,7 +159,7 @@ export default class Scheduler extends Component<IProps, IState> {
 
         ReactDOM.render(elm, $(`.schedulerDay[data-day=${info.day}]`)[0], ()=>{
             this.initSchedulerItems();
-        });        
+        });
     }
 
     initSchedulerItems = () => {

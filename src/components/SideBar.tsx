@@ -26,7 +26,7 @@ export default class SideBar extends Component {
         return (
             <>
                 <SideBarContainer>
-                    d
+                    Burayı yapmak için zamanım yetmedi..
                 </SideBarContainer>
             </>
         )
