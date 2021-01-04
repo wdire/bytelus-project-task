@@ -9,7 +9,7 @@ import 'modules/jquery-ui/themes/base/resizable.css';
 import 'jquery-ui/ui/widgets/draggable';
 import 'jquery-ui/ui/widgets/droppable';
 import 'jquery-ui/ui/widgets/resizable';
-import { createId } from '../utils';
+import { createId, roundTo_25 } from '../utils';
 
 // One hour in pixel
 const SCHEDULER_ITEM_HEIGHT = 50;
@@ -105,13 +105,13 @@ export default class Scheduler extends Component<IProps, IState> {
             return {schedulerItems:[...prevState.schedulerItems, info]};
         });
 
-        let itemTop = (info.startTime - 1) * SCHEDULER_ITEM_HEIGHT;
+        let itemTop = roundTo_25(info.startTime - 1) * SCHEDULER_ITEM_HEIGHT;
 
-        let itemHeight = (info.endTime - 1) * SCHEDULER_ITEM_HEIGHT - itemTop;
+        let itemHeight = roundTo_25(info.endTime - 1) * SCHEDULER_ITEM_HEIGHT - itemTop;
 
         let elm = (
-                <SchedulerItem style={{top:itemTop}}>
-                    <SchedulerItemWrapper color={info.color} data-id={JSON.stringify(info)} style={{height:itemHeight}}>
+                <SchedulerItem style={{top:itemTop}} data-info={JSON.stringify(info)}>
+                    <SchedulerItemWrapper color={info.color} style={{height:itemHeight}}>
                         {info.name}
                     </SchedulerItemWrapper>
                 </SchedulerItem>
@@ -135,13 +135,15 @@ export default class Scheduler extends Component<IProps, IState> {
             grid: [ schedulerItemWidth, SCHEDULER_ITEM_HEIGHT / 4 ],
             scroll:false,
             stop:(event:any, ui:any)=>{
-                let timeStart = ui.position.top / SCHEDULER_ITEM_HEIGHT + 1;
-                let timeEnd = (ui.helper[0].offsetHeight + ui.position.top) / SCHEDULER_ITEM_HEIGHT + 1;
+                let timeStart = roundTo_25(ui.position.top / SCHEDULER_ITEM_HEIGHT + 1);
+                let timeEnd = roundTo_25((ui.helper[0].offsetHeight + ui.position.top) / SCHEDULER_ITEM_HEIGHT + 1);
 
-                this.setSchedulerItemInfo({
-                    startTime:timeStart,
-                    endTime:timeEnd
-                });
+                let itemInfo:SchedulerItemInfo = JSON.parse(ui.helper[0].getAttribute("data-info"));
+
+                itemInfo.startTime = timeStart;
+                itemInfo.endTime = timeEnd;
+
+                ui.helper[0].setAttribute("data-info", JSON.stringify(itemInfo));
             }
 
         }).css("position","absolute");
@@ -157,13 +159,24 @@ export default class Scheduler extends Component<IProps, IState> {
                 
                 ui.size.height = newHeight;
 
+            },
+            stop:(event:any, ui:any)=>{
+                let newHeight = Math.round( ui.size.height / (SCHEDULER_ITEM_HEIGHT / 4) ) * (SCHEDULER_ITEM_HEIGHT / 4);
+
+                let itemInfo:SchedulerItemInfo = JSON.parse(ui.helper[0].parentElement.getAttribute("data-info"));
+
+                let timeEnd = roundTo_25((newHeight + ui.helper[0].parentElement.offsetTop) / SCHEDULER_ITEM_HEIGHT + 1);
+
+                itemInfo.endTime = timeEnd;
+
+                ui.helper[0].parentElement.setAttribute("data-info", JSON.stringify(itemInfo));
+
             }
         });
     }
 
-    setSchedulerItemInfo = (info:SchedulerItemInfoOptional)=>{
-        
-        
+    setSchedulerItemInfo = (id:string, info:SchedulerItemInfoOptional)=>{
+
     }
 
     writeScheduleDays = ()=>{
